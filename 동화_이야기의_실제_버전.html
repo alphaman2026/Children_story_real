@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>동화 이야기의 실제 버전 — 글 · 알파남 Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@400;600;900&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f1e3;--paper2:#efe6d2;--ink:#2b2520;--ink2:#5a4f45;--accent:#b5442a;--accent2:#2f6f5e;--gold:#c9a24d;
+  --bg:#1e1a17;--shadow:rgba(0,0,0,.45);
+  --serif:'Gowun Batang','Noto Serif KR','Nanum Myeongjo',serif;
+  --title:'Noto Serif KR','Gowun Batang',serif;
+  --sans:'IBM Plex Sans KR','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--serif);overflow:hidden;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(ellipse at 50% 30%,#2c2622 0%,#1a1614 70%)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;perspective:2200px}
+#book{position:relative;width:min(92vw,560px);aspect-ratio:3/4.25;max-height:calc(100vh - 92px);transform-style:preserve-3d;user-select:none}
+@media (max-width:600px){#stage{align-items:flex-start}#book{width:100vw;height:calc(100vh - 56px);max-height:none;aspect-ratio:auto}}
+.sheet{position:absolute;inset:0;background:var(--paper);border-radius:6px;box-shadow:0 18px 50px var(--shadow),0 0 0 1px rgba(0,0,0,.12) inset;overflow:hidden;backface-visibility:hidden;transform-origin:left center}
+.sheet::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.10),rgba(0,0,0,0) 6%,rgba(0,0,0,0) 94%,rgba(0,0,0,.05))}
+.sheet::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);background-size:5px 5px}
+@media (max-width:600px){.sheet{border-radius:0}}
+#flip{z-index:5;transition:transform .55s cubic-bezier(.4,.05,.3,1);pointer-events:none}
+#flip.next{transform:rotateY(-98deg)}
+#flip.prev{transform-origin:right center;transform:rotateY(98deg)}
+#flip.prev.done{transform:rotateY(0)}
+.pg{position:relative;height:100%;padding:44px 42px 52px;display:flex;flex-direction:column;overflow:hidden;z-index:2}
+@media (max-width:600px){.pg{padding:34px 24px 56px}}
+.pg .body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.pg .body::-webkit-scrollbar{width:4px}.pg .body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
+.pg .foot{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 42px;font-family:var(--sans);font-size:11px;color:var(--ink2);letter-spacing:.06em}
+@media (max-width:600px){.pg .foot{padding:0 24px}}
+.pg .foot .num{font-variant-numeric:tabular-nums}
+.tap{position:absolute;top:0;bottom:60px;width:34%;z-index:6;cursor:pointer}
+.tap.l{left:0}.tap.r{right:0}
+h1,h2,h3{font-family:var(--title);line-height:1.25}
+h2{font-size:1.55rem;font-weight:900;margin:.15em 0 .55em;color:var(--ink)}
+h3{font-size:1.05rem;font-weight:600;color:var(--accent);margin:1.1em 0 .4em;letter-spacing:.02em}
+p{font-size:1.02rem;line-height:1.85;margin:0 0 .85em;word-break:keep-all;text-align:justify}
+@media (max-width:600px){p{font-size:.98rem;line-height:1.8}h2{font-size:1.4rem}}
+.kicker{font-family:var(--sans);font-size:.72rem;letter-spacing:.2em;color:var(--accent2);text-transform:uppercase;margin-bottom:.4em}
+.orig{background:var(--paper2);border-left:3px solid var(--gold);padding:.75em .95em;border-radius:0 6px 6px 0;margin:.4em 0 1.1em}
+.orig p{margin:0;font-size:.93rem;color:var(--ink2);line-height:1.7}
+.orig .lb{font-family:var(--sans);font-size:.7rem;letter-spacing:.15em;color:var(--gold);margin-bottom:.35em}
+.moral{margin-top:1.2em;padding:1em 1.1em;border:1px solid var(--accent);border-radius:8px;background:rgba(181,68,42,.06)}
+.moral .lb{font-family:var(--sans);font-size:.7rem;letter-spacing:.18em;color:var(--accent);margin-bottom:.35em}
+.moral p{margin:0;font-weight:700;font-size:1.05rem;line-height:1.7}
+.bullet{list-style:none;margin:.2em 0 .9em}
+.bullet li{position:relative;padding-left:1.35em;margin-bottom:.55em;line-height:1.75;word-break:keep-all}
+.bullet li::before{content:"";position:absolute;left:.15em;top:.78em;width:.45em;height:.45em;border-radius:50%;background:var(--accent2)}
+.dia{margin:.6em 0 1em;padding:.6em .9em;border-radius:8px;background:#fff8;font-size:.95rem;line-height:1.75}
+.dia b{color:var(--accent)}
+.sm{font-size:.86rem;color:var(--ink2)}
+.cover{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;background:linear-gradient(180deg,#2f6f5e 0%,#1f4d41 100%);color:#f7f1e3}
+.cover .tag{font-family:var(--sans);font-size:.72rem;letter-spacing:.35em;opacity:.8;margin-bottom:1.6em}
+.cover h1{font-size:2.55rem;font-weight:900;line-height:1.3;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.cover h1 small{display:block;font-size:1.1rem;font-weight:400;opacity:.85;margin-top:.5em;letter-spacing:.1em}
+.cover .auth{margin-top:2.4em;font-family:var(--sans);font-size:.95rem;letter-spacing:.14em}
+.cover .hint{position:absolute;bottom:22px;left:0;right:0;font-family:var(--sans);font-size:.72rem;opacity:.65;letter-spacing:.1em}
+.cover svg{width:150px;height:150px;margin:0 0 1.4em;filter:drop-shadow(0 6px 12px rgba(0,0,0,.3))}
+@media (max-width:600px){.cover h1{font-size:2.05rem}.cover svg{width:120px;height:120px}}
+.toc li{display:flex;justify-content:space-between;align-items:baseline;gap:.6em;padding:.42em 0;border-bottom:1px dotted rgba(0,0,0,.2);font-size:.98rem;cursor:pointer}
+.toc li span:first-child{flex:1}
+.toc li .n{font-family:var(--sans);font-size:.8rem;color:var(--ink2)}
+.toc li:hover{color:var(--accent)}
+.ill{display:block;width:120px;height:120px;margin:0 auto .6em}
+.chap-open{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px}
+.chap-open .no{font-family:var(--sans);font-size:.75rem;letter-spacing:.35em;color:var(--accent2)}
+.chap-open h2{font-size:2rem;margin:.4em 0 .5em}
+.chap-open p{text-align:center;color:var(--ink2);font-size:.98rem}
+.chap-open svg{width:160px;height:160px;margin-bottom:1.2em}
+.end{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+/* UI */
+#bar{position:fixed;left:0;right:0;bottom:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);color:#e9e2d2;font-family:var(--sans);font-size:12px;z-index:20}
+#bar button{background:transparent;border:1px solid rgba(255,255,255,.28);color:#e9e2d2;padding:6px 12px;border-radius:20px;font-family:var(--sans);font-size:12px;cursor:pointer}
+#bar button:hover{background:rgba(255,255,255,.12)}
+#bar .mid{display:flex;align-items:center;gap:10px}
+#prog{position:fixed;left:0;right:0;bottom:52px;height:3px;background:rgba(255,255,255,.12);z-index:20}
+#prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .4s}
+#tocov{position:fixed;inset:0;background:rgba(20,16,14,.86);backdrop-filter:blur(6px);z-index:40;display:none;align-items:center;justify-content:center;padding:20px}
+#tocov.on{display:flex}
+#tocov .box{background:var(--paper);color:var(--ink);width:min(92vw,480px);max-height:82vh;overflow:auto;border-radius:10px;padding:24px 26px}
+#tocov h3{margin:0 0 .6em;color:var(--ink);font-size:1.15rem}
+#tocov .toc li.cur{color:var(--accent);font-weight:700}
+#tocov .close{margin-top:1em;width:100%;padding:9px;border:none;background:var(--accent2);color:#fff;border-radius:6px;font-family:var(--sans);cursor:pointer}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="book">
+    <div class="sheet" id="page"></div>
+    <div class="sheet" id="flip" style="display:none"></div>
+    <div class="tap l" id="tapL" title="이전"></div>
+    <div class="tap r" id="tapR" title="다음"></div>
+  </div>
+</div>
+<div id="prog"><i></i></div>
+<div id="bar">
+  <button id="btnPrev">‹ 이전</button>
+  <div class="mid"><button id="btnToc">목차</button><span id="pos">1 / 1</span></div>
+  <button id="btnNext">다음 ›</button>
+</div>
+<div id="tocov"><div class="box"><h3>목차</h3><ul class="toc" id="tocList"></ul><button class="close" id="tocClose">닫기</button></div></div>
+
+<script>
+const AUTHOR='글 · 알파남 Claude';
+const TITLE='동화 이야기의 실제 버전';
+
+/* ---------- 삽화 (인라인 SVG) ---------- */
+const ART={
+crown:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M28 78 L22 42 L40 58 L60 30 L80 58 L98 42 L92 78 Z" fill="#c9a24d" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><rect x="28" y="78" width="64" height="12" rx="2" fill="#b5442a" stroke="#2b2520" stroke-width="3"/><circle cx="60" cy="52" r="4" fill="#2f6f5e"/></svg>`,
+donkey:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M40 78 c0-20 8-30 20-30 s20 10 20 30 z" fill="#c9a24d" stroke="#2b2520" stroke-width="3"/><path d="M42 50 L30 18 L50 46 Z M78 50 L90 18 L70 46 Z" fill="#c9a24d" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><circle cx="52" cy="60" r="3" fill="#2b2520"/><circle cx="68" cy="60" r="3" fill="#2b2520"/><path d="M52 72 q8 6 16 0" stroke="#2b2520" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="36" y="78" width="48" height="10" rx="3" fill="#b5442a"/></svg>`,
+turtle:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M30 70 a30 22 0 0 1 60 0 z" fill="#2f6f5e" stroke="#2b2520" stroke-width="3"/><path d="M40 70 l6-12 l10 12 l8-12 l10 12" stroke="#f7f1e3" stroke-width="2.5" fill="none"/><circle cx="94" cy="66" r="8" fill="#6aa58f" stroke="#2b2520" stroke-width="3"/><circle cx="96" cy="64" r="1.6" fill="#2b2520"/><rect x="34" y="70" width="10" height="12" rx="3" fill="#6aa58f" stroke="#2b2520" stroke-width="3"/><rect x="72" y="70" width="10" height="12" rx="3" fill="#6aa58f" stroke="#2b2520" stroke-width="3"/><path d="M22 92 h76" stroke="#2b2520" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/></svg>`,
+elephant:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M28 74 V46 a24 24 0 0 1 48 0 v28 z" fill="#8f8a94" stroke="#2b2520" stroke-width="3"/><path d="M76 50 q22 4 14 28 q-4 10-12 4" fill="none" stroke="#2b2520" stroke-width="3" stroke-linecap="round"/><ellipse cx="30" cy="52" rx="10" ry="14" fill="#b0aab5" stroke="#2b2520" stroke-width="3"/><circle cx="56" cy="50" r="3" fill="#2b2520"/><rect x="34" y="74" width="10" height="16" fill="#8f8a94" stroke="#2b2520" stroke-width="3"/><rect x="60" y="74" width="10" height="16" fill="#8f8a94" stroke="#2b2520" stroke-width="3"/><path d="M84 96 q6-10 14-6" stroke="#b5442a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="100" cy="90" r="5" fill="#b5442a"/></svg>`,
+wolf:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M34 60 L40 30 L54 46 H66 L80 30 L86 60 Q86 84 60 88 Q34 84 34 60 Z" fill="#5a5560" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="60" r="3.5" fill="#f7f1e3"/><circle cx="70" cy="60" r="3.5" fill="#f7f1e3"/><circle cx="51" cy="60" r="1.6" fill="#2b2520"/><circle cx="71" cy="60" r="1.6" fill="#2b2520"/><path d="M52 74 q8 6 16 0" stroke="#f7f1e3" stroke-width="2.5" fill="none"/><path d="M56 74 l2 5 M64 74 l-2 5" stroke="#f7f1e3" stroke-width="2.5"/><path d="M22 96 l10-18 l10 18 z" fill="#c9a24d" stroke="#2b2520" stroke-width="2"/></svg>`,
+king:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><circle cx="60" cy="44" r="16" fill="#f3d3b0" stroke="#2b2520" stroke-width="3"/><path d="M44 34 L42 20 L52 28 L60 16 L68 28 L78 20 L76 34 Z" fill="#c9a24d" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><path d="M40 96 v-20 a20 20 0 0 1 40 0 v20 z" fill="#f3d3b0" stroke="#2b2520" stroke-width="3"/><path d="M52 80 q8 6 16 0" stroke="#2b2520" stroke-width="2" fill="none"/><circle cx="55" cy="44" r="2" fill="#2b2520"/><circle cx="65" cy="44" r="2" fill="#2b2520"/><path d="M92 40 q10 4 0 12" stroke="#b5442a" stroke-width="3" fill="none"/><path d="M94 60 q10 4 0 12" stroke="#b5442a" stroke-width="3" fill="none"/></svg>`,
+ant:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><ellipse cx="42" cy="62" rx="12" ry="9" fill="#2b2520"/><ellipse cx="60" cy="60" rx="9" ry="8" fill="#2b2520"/><ellipse cx="76" cy="58" rx="8" ry="7" fill="#2b2520"/><path d="M36 70 l-8 12 M48 70 l-6 14 M58 68 l2 14 M66 66 l8 12 M80 52 l8-10 M76 52 l-2-12" stroke="#2b2520" stroke-width="2.5" stroke-linecap="round"/><path d="M60 40 q14-18 30-6" stroke="#2f6f5e" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M84 30 l6 6 M84 30 l-2 8" stroke="#2f6f5e" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="86" r="6" fill="#c9a24d"/><circle cx="34" cy="90" r="5" fill="#c9a24d"/></svg>`,
+pig:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M28 56 L60 30 L92 56 Z" fill="#b5442a" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="56" width="48" height="34" fill="#e0c9a6" stroke="#2b2520" stroke-width="3"/><rect x="54" y="70" width="12" height="20" fill="#2f6f5e" stroke="#2b2520" stroke-width="2"/><circle cx="60" cy="48" r="9" fill="#f4b8c1" stroke="#2b2520" stroke-width="2.5"/><ellipse cx="60" cy="50" rx="4" ry="3" fill="#e08a99"/><circle cx="58.5" cy="50" r="1" fill="#2b2520"/><circle cx="61.5" cy="50" r="1" fill="#2b2520"/><path d="M96 36 q8-8 12 0 q-2 8-8 6" fill="#8f8a94" stroke="#2b2520" stroke-width="2"/></svg>`,
+gourd:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M60 24 c-12 0-16 10-14 18 c-20 6-22 40 0 46 h28 c22-6 20-40 0-46 c2-8-2-18-14-18 z" fill="#8fbf8a" stroke="#2b2520" stroke-width="3"/><path d="M60 24 v64" stroke="#2b2520" stroke-width="2" stroke-dasharray="4 4"/><path d="M54 18 q6-8 12 0" stroke="#2f6f5e" stroke-width="3" fill="none"/><circle cx="92" cy="40" r="4" fill="#c9a24d"/><circle cx="100" cy="52" r="3" fill="#c9a24d"/><circle cx="24" cy="46" r="3" fill="#c9a24d"/><path d="M22 92 q10-10 20 0" stroke="#2b2520" stroke-width="2" fill="none"/></svg>`,
+shoe:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M28 78 q0-18 18-22 l22-6 q10 10 26 12 v16 z" fill="#bfe1ee" stroke="#2b2520" stroke-width="3" stroke-linejoin="round"/><path d="M68 50 q6 8 12 10" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/><rect x="30" y="78" width="20" height="10" fill="#2f6f5e" stroke="#2b2520" stroke-width="2.5"/><path d="M92 30 l3 8 l8 3 l-8 3 l-3 8 l-3-8 l-8-3 l8-3 z" fill="#c9a24d"/><circle cx="26" cy="36" r="3" fill="#c9a24d"/><path d="M60 100 l4-8 l4 8" stroke="#2b2520" stroke-width="2" fill="none"/></svg>`,
+axe:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="56" fill="#f7f1e3"/><path d="M20 80 q40-16 80 0 v16 h-80 z" fill="#6aa5d8" stroke="#2b2520" stroke-width="3"/><path d="M28 86 q10-6 20 0 M56 86 q10-6 20 0" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/><rect x="56" y="18" width="7" height="58" rx="2" fill="#8b5a2b" stroke="#2b2520" stroke-width="2.5" transform="rotate(20 60 47)"/><path d="M40 28 q-18 4-14 26 q12 4 24-10 z" fill="#c9a24d" stroke="#2b2520" stroke-width="3"/><circle cx="90" cy="30" r="5" fill="#c9a24d"/><circle cx="100" cy="46" r="4" fill="#d9d9d9" stroke="#2b2520" stroke-width="1.5"/></svg>`,
+book:`<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 28 q-24-12-42-4 v66 q18-8 42 4 z" fill="#f7f1e3" stroke="#f7f1e3" stroke-width="3" stroke-linejoin="round"/><path d="M60 28 q24-12 42-4 v66 q-18-8-42 4 z" fill="#efe6d2" stroke="#f7f1e3" stroke-width="3" stroke-linejoin="round"/><path d="M60 28 v66" stroke="#c9a24d" stroke-width="3"/><path d="M26 42 h24 M26 52 h24 M26 62 h20 M70 42 h24 M70 52 h24 M70 62 h20" stroke="#2f6f5e" stroke-width="2.5" stroke-linecap="round" opacity=".8"/><path d="M86 18 l3 7 l7 3 l-7 3 l-3 7 l-3-7 l-7-3 l7-3 z" fill="#c9a24d"/></svg>`
+};
+
+/* ---------- 페이지 데이터 ---------- */
+function orig(t){return `<div class="orig"><div class="lb">원작 요약</div><p>${t}</p></div>`}
+function moral(t){return `<div class="moral"><div class="lb">실제 버전 한 줄 정리</div><p>${t}</p></div>`}
+function open(no,title,art,sub){return {type:'open',html:`<div class="chap-open">${ART[art]}<div class="no">${no}</div><h2>${title}</h2><p>${sub}</p></div>`,toc:title,chapter:true}}
+function pg(title,html){return {type:'text',html:`<div class="pg"><div class="body"><div class="kicker">${title}</div>${html}</div></div>`}}
+
+const PAGES=[
+{type:'cover',html:`<div class="cover"><div class="tag">REAL-LIFE EDITION</div>${ART.book}<h1>동화 이야기의<br>실제 버전<small>어릴 땐 몰랐고, 어른이 되니 너무 잘 아는 이야기</small></h1><div class="auth">${AUTHOR}</div><div class="hint">화면 오른쪽을 누르거나 옆으로 밀어 넘기세요</div></div>`,toc:'표지'},
+
+pg('들어가며',`<h2>동화는 거짓말을 안 했다.<br>다만 결말을 너무 일찍 끊었을 뿐.</h2>
+<p>어릴 때 읽은 동화는 늘 깔끔했다. 착한 사람은 상을 받고, 나쁜 사람은 벌을 받고, 마지막 장에는 "행복하게 살았답니다"가 찍혀 있었다.</p>
+<p>그런데 어른이 되어 회사를 다니고, 사람을 겪고, 돈을 잃어 보니 이상한 일이 생겼다. 동화 속 장면들이 자꾸 현실에서 재방송되는 것이다. 다만 결말이 다르다. 임금님의 비밀은 이미 다 알고 있고, 토끼는 낮잠을 안 자도 지며, 늑대가 진짜 나타난 날에 아무도 안 온다.</p>
+<p>이 책은 우리가 다 아는 동화 열 편을 다시 꺼내, "그래서 실제로는 어떻게 되는데?"를 적어 본 기록이다. 교훈을 주려는 책이 아니다. 웃으면서 "아, 이거 우리 팀 얘기네" 하고 넘기면 그걸로 충분하다.</p>
+<p class="sm">※ 등장하는 상황은 모두 허구이며, 혹시 본인 이야기 같다면 그건 당신 회사가 동화책을 너무 열심히 읽어서 그런 것이다.</p>`),
+
+{type:'toc',html:'',toc:'목차'},
+
+/* 1. 임금님 귀는 당나귀 귀 */
+open('제1화','임금님 귀는 당나귀 귀','donkey','비밀은 대나무 숲이 아니라 단톡방에서 새어 나간다'),
+pg('제1화 · 임금님 귀는 당나귀 귀',`
+${orig('임금님의 귀가 당나귀 귀처럼 길다. 이 비밀을 아는 사람은 왕관을 만든 장인뿐. 말하면 죽는다는 협박에 평생 입을 다물다가, 죽기 직전 대나무 숲에 대고 외쳤다. "임금님 귀는 당나귀 귀!" 그 뒤로 바람이 불 때마다 대나무 숲이 그 말을 반복했다.')}
+<h3>실제 버전 ① — 모두가 알지만 아무도 말하지 않는다</h3>
+<p>회의실에 어려운 문제가 하나 놓여 있다. 프로젝트가 산으로 가고 있다든가, 신제품이 시장에서 반응이 없다든가. 그런데 아무도 그 문제를 공개적으로 꺼내지 않는다.</p>
+<p>이유는 하나다. 잘 모르기 때문이다. 정확히는, 자기가 잘 모른다는 사실이 탄로날까 봐서다. "그 이슈 어떻게 보세요?"라고 물었다가 "그건 이미 지난주에 정리됐잖아요"라는 대답이 돌아오면 어쩌나. 그래서 다들 고개를 끄덕이며 서로의 침묵을 존중한다.</p>
+<p>임금님의 귀는 사실 모두에게 보인다. 왕관으로 가려도 삐져나온다. 다만 "저거 당나귀 귀 아니야?"라고 처음 말하는 사람이 되기 싫을 뿐이다.</p>`),
+pg('제1화 · 임금님 귀는 당나귀 귀',`
+<h3>실제 버전 ② — "이건 너한테만 말하는 건데"</h3>
+<p>누군가에게 비밀이 생겼다. 절대 말하면 안 되는 비밀이다. 그래서 답답하다. 비밀은 원래 혼자 들고 있으면 무거워지는 성질이 있다.</p>
+<p>그래서 가장 친한 사람에게 간다. "이건 진짜 너한테만 말하는 거야." 상대는 진지하게 고개를 끄덕인다. 그리고 그 사람에게도 가장 친한 사람이 있다.</p>
+<div class="dia"><b>A</b> : 너한테만 말하는 건데, 김 과장 이직한대.<br><b>B</b> : 헐, 진짜? 나만 알고 있을게.<br><b>C</b> (다음 날) : 야, 너 김 과장 얘기 들었어? 나한테만 말한 거래.<br><b>D</b> (그다음 날) : 근데 김 과장 본인은 아직 모르지?</div>
+<p>결국 부서 전원이 알게 된다. 그런데 이상하다. 모두가 알고 있는데 아무도 말하지 못한다. 왜냐하면 각자 "비밀로 하자"고 약속했기 때문이다. 대나무 숲은 이미 시끄러운데, 다들 바람 소리인 척한다.</p>
+<p>동화 속 장인은 죽기 직전에야 대나무 숲에 외쳤지만, 현대판 장인은 커피 한 잔 마시기도 전에 외친다. 그리고 대나무 숲은 이제 단톡방이라고 부른다.</p>
+${moral('비밀은 지켜지지 않는다. 다만 "지키는 척"이 지켜질 뿐이다. 그리고 문제는 모두가 알아도, 처음 말하는 사람이 없으면 없는 문제가 된다.')}`),
+
+/* 2. 토끼와 거북이 */
+open('제2화','토끼와 거북이','turtle','토끼는 낮잠을 안 자도 진다. 시합이 30년짜리라면'),
+pg('제2화 · 토끼와 거북이',`
+${orig('발 빠른 토끼와 느린 거북이가 달리기 시합을 한다. 토끼는 한참 앞서다가 방심하고 낮잠을 잔다. 거북이는 쉬지 않고 기어가 결승선에 먼저 도착한다.')}
+<h3>실제 버전 ① — 시합이 100m가 아니라 30년이라면</h3>
+<p>어릴 땐 이 이야기를 "게으르면 진다"로 배웠다. 그런데 실제로 토끼가 낮잠을 안 잤다면? 100m 시합이라면 당연히 토끼가 이긴다. 그건 거북이도 안다.</p>
+<p>문제는 인생이라는 시합이 100m가 아니라는 데 있다. 30년짜리다. 이 거리에서는 게임의 규칙이 바뀐다. 토끼는 빠르지만, 빠른 것들은 대개 오래 못 간다. 세 번쯤 전력 질주하고 나면 "이거 나랑 안 맞는 것 같아"라며 다른 트랙으로 옮겨 간다. 거기서도 빠르다. 그리고 또 옮긴다.</p>
+<p>거북이는 그동안 같은 트랙에 있다. 느리지만 어제와 같은 방향으로 한 칸 더 갔다. 재미없어 보이지만, 30년을 곱하면 결과가 달라진다.</p>`),
+pg('제2화 · 토끼와 거북이',`
+<h3>실제 버전 ② — 거북이의 진짜 비결은 "계속"이다</h3>
+<p>한 분야에서 살아남은 사람들을 보면 공통점이 있다. 대단히 빠르지도, 대단히 똑똑하지도 않다. 그냥 그만두지 않았다. 남들이 세 번 갈아탈 동안 한 트랙에서 세 번 넘어지고 세 번 일어났을 뿐이다.</p>
+<ul class="bullet">
+<li>10년 차 엔지니어는 천재라서가 아니라 10년을 버텨서 10년 차다.</li>
+<li>동네에서 30년 된 식당은 맛이 최고여서가 아니라 30년 동안 문을 열어서 남았다.</li>
+<li>주식으로 돈 번 사람은 예측을 잘해서가 아니라, 하락장에서 안 팔고 시장에 남아 있어서다.</li>
+</ul>
+<p>토끼가 지는 진짜 이유는 낮잠이 아니다. 자신이 빠르다는 걸 알기 때문에 "언제든 따라잡을 수 있다"고 믿는다. 그 믿음이 오늘의 한 칸을 미루게 만든다. 반면 거북이는 자신이 느리다는 걸 알기 때문에 오늘 한 칸을 미룰 수가 없다.</p>
+<p>그러니 결승선 앞에서 만나는 건 대개 이런 장면이다. 헐떡이며 뒤늦게 뛰어온 토끼와, 그 옆에서 "어, 왔어? 나 먼저 도착했는데"라고 말하는 거북이.</p>
+${moral('인생을 긴 축으로 놓고 보면, 그 분야를 계속하는 사람이 이긴다. 빠른 사람이 아니라 남아 있는 사람이 마지막에 서 있다.')}`),
+
+/* 3. 장님과 코끼리 */
+open('제3화','장님 코끼리 만지기','elephant','다리 하나 만져 보고 "코끼리는 기둥"이라고 발표하는 사람들'),
+pg('제3화 · 장님 코끼리 만지기',`
+${orig('앞을 못 보는 여섯 사람이 코끼리를 만진다. 다리를 만진 사람은 기둥이라 하고, 코를 만진 사람은 뱀이라 하고, 귀를 만진 사람은 부채라 한다. 각자 자기가 만진 부분이 코끼리의 전부라고 우긴다.')}
+<h3>실제 버전 ① — 신입 3개월 차의 세상 정복</h3>
+<p>입사 3개월 된 신입이 말한다. "우리 회사는 원래 이래요." 입사 3개월이면 회사의 다리 하나를 만진 것이다. 그런데 그 다리가 유난히 두꺼웠다면, 회사는 기둥이 된다.</p>
+<p>이건 신입만의 문제가 아니다. 한 부서에서 20년을 보낸 사람도 자기 부서를 만지고 회사 전체를 안다고 말한다. 다리를 20년 만졌다고 코끼리가 기둥이 되는 건 아닌데 말이다. 만진 시간이 길수록 확신만 커진다.</p>
+<p>세상을 조금 경험하고 세상을 다 안다고 말하는 것. 이게 코끼리 이야기의 실제 버전이다. 그리고 우리는 모두 어딘가의 다리를 만지고 있다.</p>`),
+pg('제3화 · 장님 코끼리 만지기',`
+<h3>실제 버전 ② — 문제는 서로 틀렸다는 게 아니라, 아무도 물어보지 않는다는 것</h3>
+<p>사실 여섯 사람은 모두 맞았다. 다리는 정말 기둥 같고, 코는 정말 뱀 같다. 틀린 건 관찰이 아니라 "이게 전부다"라는 결론이었다.</p>
+<p>현실에서도 마찬가지다. 영업은 "고객이 원하는 건 가격"이라 하고, 개발은 "고객이 원하는 건 성능"이라 하고, 디자인은 "고객이 원하는 건 예쁨"이라 한다. 다 맞다. 그런데 회의는 늘 "누가 맞느냐"로 흐른다. "우리가 만진 걸 합치면 뭐가 되느냐"로는 좀처럼 가지 않는다.</p>
+<div class="dia"><b>다리 담당</b> : 코끼리는 기둥이야. 내가 직접 만졌어.<br><b>코 담당</b> : 무슨 소리야, 뱀이지. 나도 직접 만졌어.<br><b>귀 담당</b> : 둘 다 틀렸어. 부채야.<br><b>코끼리</b> : (묵묵히 세 사람을 태우고 걸어감)</div>
+<p>코끼리 전체를 본 사람은 없다. 그래서 가장 현명한 태도는 "나는 다리를 만졌는데, 너는 뭘 만졌어?"라고 묻는 것이다. 이 질문 하나가 기둥과 뱀과 부채를 코끼리로 만든다.</p>
+${moral('세상을 조금 경험하고 다 안다고 말하지 말자. 내가 만진 건 다리다. 코끼리는 언제나 내 손보다 크다.')}`),
+
+/* 4. 양치기 소년 */
+open('제4화','양치기 소년','wolf','늑대가 진짜 나타난 날, 소년보다 먼저 지친 건 마을 사람들이었다'),
+pg('제4화 · 양치기 소년',`
+${orig('심심한 양치기 소년이 "늑대가 나타났다!"고 거짓말을 한다. 마을 사람들이 달려오지만 늑대는 없다. 몇 번 반복되자 아무도 오지 않는다. 그리고 진짜 늑대가 나타난 날, 아무도 오지 않았다.')}
+<h3>실제 버전 ① — 모든 메일 제목이 "긴급"인 조직</h3>
+<p>어떤 조직에서는 늑대가 매일 나타난다. 메일 제목에 [긴급]이 붙고, 메신저에는 "지금 바로"가 찍히고, 회의는 항상 "이번이 정말 중요한" 회의다.</p>
+<p>처음엔 다들 뛰어온다. 두 번째도 온다. 세 번째부터는 걸어온다. 열 번째쯤 되면 [긴급]이라는 글자는 "평소처럼"으로 읽힌다. 알람이 너무 자주 울리면 알람은 배경 음악이 된다.</p>
+<p>그러다 진짜 늑대가 온다. 진짜 고객 이슈, 진짜 사고. 담당자는 [긴급]을 붙여 메일을 보낸다. 그런데 그 메일은 오늘 받은 열두 번째 [긴급] 메일이다. 늑대는 양을 다 먹고 유유히 떠난다.</p>`),
+pg('제4화 · 양치기 소년',`
+<h3>실제 버전 ② — 소년은 사실 거짓말쟁이가 아니라 "톤 조절 실패자"였다</h3>
+<p>양치기 소년은 나쁜 아이였을까. 아마 그냥 심심하고 외로웠을 것이다. 사람들이 달려오는 게 좋았을 뿐이다. 현대판 소년도 비슷하다. 자기 일이 중요해 보이길 바라고, 사람들이 반응해 주길 바란다. 그래서 모든 일에 같은 크기의 목소리를 낸다.</p>
+<p>문제는 "늑대"라는 단어가 화폐라는 점이다. 한 번 쓸 때마다 가치가 떨어진다. 100번 쓰면 휴지가 된다. 그래서 정말 신뢰받는 사람은 반대로 한다. 평소엔 조용하다. 그 사람이 "이건 진짜다"라고 하면 다들 뛰어온다. 그 한마디를 위해 평소의 침묵을 저축해 둔 것이다.</p>
+<ul class="bullet">
+<li>매번 "이번 달이 고비"라고 말하는 사장의 회사는, 진짜 고비가 왔을 때 아무도 안 움직인다.</li>
+<li>매번 "이번엔 진짜 끊어"라고 말하는 친구의 금연 선언은, 진짜 끊은 날에도 축하를 못 받는다.</li>
+<li>매 분기 "역대급 기회"라는 리포트는, 진짜 역대급 기회가 왔을 때 스팸함에 있다.</li>
+</ul>
+${moral('경고의 힘은 횟수에 반비례한다. 평소에 조용해야 진짜 늑대가 왔을 때 사람들이 뛴다.')}`),
+
+/* 5. 벌거벗은 임금님 */
+open('제5화','벌거벗은 임금님','king','"보고서가 훌륭하네요"라고 말하는 사람 중 그 보고서를 읽은 사람은 없다'),
+pg('제5화 · 벌거벗은 임금님',`
+${orig('사기꾼 재단사들이 "어리석은 사람 눈에는 보이지 않는 옷"을 만든다며 임금님에게 아무것도 없는 옷을 바친다. 신하들도, 임금님도, 백성들도 옷이 안 보이지만 어리석다는 소리를 들을까 봐 "멋진 옷"이라고 칭찬한다. 한 아이가 외친다. "임금님이 벌거벗었다!"')}
+<h3>실제 버전 ① — 아무도 이해 못 하는 전략 발표</h3>
+<p>경영진이 새로운 전략을 발표한다. 슬라이드에는 "디지털 트랜스포메이션 기반 시너지 창출을 통한 밸류체인 혁신"이 적혀 있다. 아무도 이게 무슨 뜻인지 모른다. 발표한 사람도 모른다.</p>
+<p>그런데 회의실은 고개를 끄덕이는 소리로 가득하다. "방향성이 명확하네요." "인사이트가 있습니다." 자기만 이해 못 한 줄 아니까, 이해한 척한다. 그리고 옆 사람도 정확히 같은 생각을 하고 있다.</p>
+<p>이 옷은 "어리석은 사람 눈에는 안 보인다"는 조건이 붙어 있어서 아무도 안 보인다고 말하지 못했다. 현대판 옷은 "이걸 모르면 트렌드에 뒤처진 사람"이라는 조건이 붙어 있다. 효과는 똑같다.</p>`),
+pg('제5화 · 벌거벗은 임금님',`
+<h3>실제 버전 ② — 아이는 왜 말할 수 있었나</h3>
+<p>동화에서 진실을 말한 건 아이였다. 똑똑해서가 아니다. 잃을 게 없어서다. 아이는 승진 심사도 없고, 인사 평가도 없고, "쟤 눈치 없다"는 평판이 무서울 나이도 아니다.</p>
+<p>어른들은 다 알고 있었다. 다만 계산을 했을 뿐이다. "옷이 안 보인다"고 말했을 때의 손해와, 가만히 있을 때의 손해를 비교했더니 후자가 쌌던 것이다. 그 계산이 백 명 모이면 벌거벗은 임금님이 거리 행진을 한다.</p>
+<div class="dia"><b>신입</b> : 저기, 이 지표는 왜 이렇게 계산하는 거예요?<br><b>과장</b> : 원래 그렇게 하는 거야.<br><b>신입</b> : 그러면 이 숫자는 뭘 의미하는 건데요?<br><b>과장</b> : ...그건 부장님한테 물어봐.<br><b>부장</b> : ...그건 처음 만든 사람이 퇴사해서.</div>
+<p>재미있는 건 아이가 외친 뒤의 반응이다. 동화에서는 다들 "맞아, 벌거벗었어!"라고 웃는다. 현실에서는 아이를 조용히 회의실 밖으로 데리고 나간다. 그리고 다음 분기에 임금님은 새 옷을 또 발표한다.</p>
+${moral('모두가 침묵하는 이유는 몰라서가 아니라, 계산해서다. 진실은 잃을 게 없는 사람의 입에서 나온다. 그래서 조직에 "아이"가 한 명은 있어야 한다.')}`),
+
+/* 6. 개미와 베짱이 */
+open('제6화','개미와 베짱이','ant','베짱이가 유튜브를 시작했고, 개미는 아직도 야근 중이다'),
+pg('제6화 · 개미와 베짱이',`
+${orig('여름 내내 개미는 땀 흘려 곡식을 모으고, 베짱이는 노래만 부르며 논다. 겨울이 오자 베짱이는 굶주려 개미네 집을 찾아간다. 개미는 "여름에 노래했으니 겨울엔 춤을 추라"고 문을 닫는다.')}
+<h3>실제 버전 ① — 베짱이가 노래로 돈을 벌기 시작했다</h3>
+<p>동화의 전제는 "노래는 놀이, 곡식 모으기는 일"이었다. 그런데 어느 날 세상이 바뀌었다. 노래하는 걸 찍어 올리니 사람들이 봤다. 조회수가 붙고, 광고가 붙고, 협찬이 붙었다. 베짱이는 여름에 놀았던 게 아니라 콘텐츠를 쌓고 있었다.</p>
+<p>겨울이 왔을 때 베짱이는 개미네 집에 가지 않았다. 개미가 베짱이 채널을 구독하고 있었다. 개미는 곡식을 모으느라 여름을 다 썼고, 모은 곡식은 물가 상승률만큼 가치가 떨어져 있었다.</p>
+<p>이 이야기의 실제 교훈은 "놀지 마라"가 아니다. "뭐가 일이고 뭐가 놀이인지는 겨울이 되어 봐야 안다"에 가깝다.</p>`),
+pg('제6화 · 개미와 베짱이',`
+<h3>실제 버전 ② — 그래도 개미가 완전히 틀린 건 아니다</h3>
+<p>여기서 "그러니까 놀자"로 결론 내면 그건 베짱이가 좋아할 만한 요약이다. 성공한 베짱이 뒤에는 겨울에 얼어 죽은 베짱이가 백 마리쯤 있다. 우리는 살아남은 한 마리만 본다. 채널이 안 뜬 베짱이는 동화에도 안 나오고 알고리즘에도 안 나온다.</p>
+<p>개미의 문제는 성실함이 아니었다. 성실함의 방향이었다. 곡식만 모았지, 곡식이 겨울에도 곡식일지 한 번도 안 물었다. 매일 같은 일을 성실하게 반복하는 것과, 그 일이 아직 유효한지 가끔 고개를 드는 것은 다른 능력이다.</p>
+<ul class="bullet">
+<li>개미형 실패 : 열심히 했는데, 열심히 한 그 일이 사라졌다.</li>
+<li>베짱이형 실패 : 재밌게 했는데, 재밌기만 했다.</li>
+<li>살아남는 쪽 : 재밌는 걸 개미처럼 한 베짱이, 또는 가끔 고개를 드는 개미.</li>
+</ul>
+<p>그리고 하나 더. 개미가 문을 닫아 버린 그 겨울, 이웃을 잃은 개미는 다음 여름에 혼자 일해야 했다. 곡식은 쌓였지만, 곡식이 노래를 불러 주진 않았다.</p>
+${moral('성실함은 방향이 있어야 자산이 된다. 그리고 놀이와 일의 경계는 당신이 아니라 시대가 정한다.')}`),
+
+/* 7. 아기돼지 삼형제 */
+open('제7화','아기돼지 삼형제','pig','벽돌집 셋째는 완공 전에 늑대를 두 번 만났다'),
+pg('제7화 · 아기돼지 삼형제',`
+${orig('아기돼지 삼형제가 각자 집을 짓는다. 첫째는 짚으로, 둘째는 나무로 대충 짓고, 셋째는 힘들게 벽돌로 짓는다. 늑대가 나타나 짚집과 나무집을 후 불어 날려 버리지만, 벽돌집은 끄떡없다.')}
+<h3>실제 버전 ① — 벽돌집은 준공 전에 늑대가 온다</h3>
+<p>동화에서는 셋째가 벽돌집을 다 지은 뒤에 늑대가 온다. 참 친절한 늑대다. 현실의 늑대는 그런 배려가 없다. 벽돌을 절반쯤 쌓았을 때 온다. 그러면 셋째는 벽돌집도 아니고 짚집도 아닌, 그냥 공사장 한가운데 서 있는 돼지가 된다.</p>
+<p>그동안 첫째와 둘째는 짚집과 나무집에서 이미 두 계절을 살았다. 늑대가 안 온 계절에는 짚집도 집이다. 셋째는 "튼튼한 걸 짓는 중"이라는 이유로 두 계절 동안 노숙을 했다.</p>
+<p>완벽한 준비는 완벽하게 늦는다. 문제는 늑대가 우리 일정표를 보지 않는다는 것이다.</p>`),
+pg('제7화 · 아기돼지 삼형제',`
+<h3>실제 버전 ② — 그렇다고 짚집이 답인 것도 아니다</h3>
+<p>여기서 "그러니까 대충 짓자"로 가면 첫째가 좋아한다. 짚집은 늑대가 오면 끝이다. 그리고 늑대는 반드시 온다. 시장 변화, 경쟁사 출시, 갑작스러운 정책. 이름만 다를 뿐 다 늑대다.</p>
+<p>살아남은 돼지들을 보면 순서가 다르다. 일단 나무집을 빨리 짓고 들어가 산다. 그 안에서 벽돌을 한 장씩 덧댄다. 늑대가 오면 나무집이 벽돌 반 장만큼 버텨 준다. 안 오면 그 시간에 벽돌이 한 줄 더 올라간다. 완벽한 집을 짓는 게 아니라, 살면서 집을 바꾸는 것이다.</p>
+<div class="dia"><b>첫째</b> : 난 벌써 입주했어. 인테리어도 끝냈어.<br><b>셋째</b> : 난 아직 기초 공사 중이야. 대신 완공되면 100년 가.<br><b>둘째</b> : 난 나무집에 살면서 벽에 벽돌 붙이는 중.<br><b>늑대</b> : (둘째네 집 앞에서) 어, 이거 왜 안 넘어가지?</div>
+<p>동화는 "튼튼하게 지어라"를 말했지만, 실제 버전은 "지금 들어가 살 수 있는 걸 짓고, 살면서 튼튼하게 만들어라"에 가깝다. 늑대는 완공을 기다려 주지 않으니까.</p>
+${moral('완벽한 벽돌집을 기다리다가 공사장에서 늑대를 만난다. 일단 살 수 있는 집을 짓고, 살면서 벽돌을 덧대라.')}`),
+
+/* 8. 흥부와 놀부 */
+open('제8화','흥부와 놀부','gourd','제비가 박씨를 물어다 준 건 사실이지만, 흥부는 그전에 20년을 굶었다'),
+pg('제8화 · 흥부와 놀부',`
+${orig('욕심 많은 형 놀부는 착한 동생 흥부를 쫓아낸다. 흥부는 가난하지만 다리 다친 제비를 치료해 주고, 제비는 박씨를 물어다 준다. 박에서 금은보화가 쏟아진다. 놀부는 일부러 제비 다리를 부러뜨려 박씨를 받지만, 박에서 도깨비가 나온다.')}
+<h3>실제 버전 ① — 박씨는 한 개인데 흥부 자식은 열둘이다</h3>
+<p>동화는 박이 터지는 장면에서 끝난다. 그런데 그 다음이 궁금하지 않은가. 흥부는 자식이 열둘이었다. 금은보화가 나왔다. 그날 저녁부터 열두 명이 "아버지, 제 몫은요?"를 시작한다. 재산 분할이 시작되는 순간 흥부네는 놀부네보다 시끄러워진다.</p>
+<p>현실에서 갑자기 큰돈이 생긴 사람들의 이야기는 대체로 박이 터진 이후가 더 험하다. 돈이 생기는 것과 돈을 지키는 것은 다른 기술이고, 흥부는 전자만 운 좋게 얻었다.</p>
+<p>그리고 하나 더. 제비가 박씨를 준 건 흥부가 착해서가 맞다. 하지만 흥부가 착한 것만으로 20년을 굶었다는 것도 사실이다. 착함은 조건이지 전략은 아니었다.</p>`),
+pg('제8화 · 흥부와 놀부',`
+<h3>실제 버전 ② — 놀부의 진짜 실수는 욕심이 아니라 "복제"였다</h3>
+<p>놀부를 보자. 동생이 제비 덕에 부자가 됐다는 말을 듣고 제비 다리를 일부러 부러뜨려 고쳐 준다. 겉으로는 똑같은 행동이다. 결과는 도깨비였다.</p>
+<p>이건 현대의 "성공 사례 복제"와 놀랍도록 닮았다. 옆 회사가 어떤 걸로 성공했다고 하면 그대로 따라 한다. 그런데 옆 회사는 10년 동안 그걸 준비했고, 우리는 지난주에 들었다. 형식은 복제되지만 맥락은 복제되지 않는다. 그리고 맥락이 빠진 형식에서는 대체로 도깨비가 나온다.</p>
+<ul class="bullet">
+<li>남들이 하니까 시작한 신사업 → 도깨비.</li>
+<li>남들이 올랐다니까 뒤늦게 산 주식 → 도깨비.</li>
+<li>남들이 좋다니까 급하게 도입한 제도 → 아주 큰 도깨비.</li>
+</ul>
+<p>놀부가 진짜 부자가 되려 했다면 제비 다리를 부러뜨릴 게 아니라, 흥부가 왜 다친 제비를 그냥 지나치지 못하는 사람이 됐는지를 봤어야 했다. 그건 하루 만에 복제가 안 된다. 그래서 놀부는 지름길을 택했고, 지름길 끝에는 늘 도깨비가 있다.</p>
+${moral('결과는 복제할 수 있어도 과정은 복제되지 않는다. 남의 박씨를 억지로 받으면 박에서 도깨비가 나온다.')}`),
+
+/* 9. 신데렐라 */
+open('제9화','신데렐라','shoe','유리구두는 사실 "온 나라에서 발 사이즈가 유일한 사람"을 찾는 신원 조회였다'),
+pg('제9화 · 신데렐라',`
+${orig('계모와 언니들에게 구박받던 신데렐라가 요정의 도움으로 무도회에 간다. 왕자와 춤을 추다 자정에 급히 떠나며 유리구두 한 짝을 남긴다. 왕자는 구두가 맞는 여인을 찾아 온 나라를 뒤지고, 마침내 신데렐라를 찾아 결혼한다.')}
+<h3>실제 버전 ① — 왕자는 얼굴을 기억 못 했다</h3>
+<p>차분히 생각해 보자. 왕자는 신데렐라와 밤새 춤을 췄다. 그런데 다음 날 그녀를 찾는 방법이 "발 사이즈"였다. 얼굴을 기억 못 한 것이다. 이름도 안 물어봤다. 하룻밤 춤을 추면서 상대의 이름조차 안 물은 사람이 평생의 반려자를 찾겠다고 나섰다.</p>
+<p>이건 현대의 채용과 놀랍도록 닮았다. 면접에서 한 시간 동안 대화하고 나서, 실제로 뽑을 땐 "학교", "자격증", "발 사이즈"로 거른다. 대화의 내용은 어디로 갔는가. 온 나라 여자들이 구두에 발을 밀어 넣는 장면은, 스펙 한 줄을 맞추려 발을 깎는 취준생과 겹친다.</p>
+<p>그리고 유리구두는 원래 한 짝만 남았다. 다른 한 짝은 신데렐라가 갖고 있었다. 즉, 그녀는 처음부터 "찾아오면 증명할 수 있는" 상태였다. 왕자가 안 찾아왔으면 그냥 짝 없는 구두를 든 채로 늙었을 것이다.</p>`),
+pg('제9화 · 신데렐라',`
+<h3>실제 버전 ② — 요정은 준비된 사람에게만 온다는 말의 진짜 뜻</h3>
+<p>"기회는 준비된 사람에게 온다"는 말은 신데렐라 때문에 유명해졌다. 그런데 신데렐라가 준비한 게 뭐였나. 청소였다. 요리였다. 계모 눈치 보기였다. 무도회 매너를 배운 적도, 춤을 연습한 적도 없다.</p>
+<p>그런데도 무도회에서 왕자가 그녀에게 끌린 이유는, 아마 그 자리의 유일하게 "왕자와 결혼하려고 안 온 사람"이었기 때문일 것이다. 다들 왕자를 노리고 왔는데, 그녀는 그냥 오늘 하루 노는 게 목적이었다. 절박하지 않은 사람이 제일 매력적으로 보이는 법이다.</p>
+<div class="dia"><b>언니 1</b> : 이 구두는 제가 원래 신던 거예요! (발 반쯤 들어감)<br><b>언니 2</b> : 제 발이 요즘 좀 부어서요! (발가락만 들어감)<br><b>신데렐라</b> : 아, 그거 제 건데. 여기 다른 한 짝이요.<br><b>왕자</b> : (그제야) 아, 맞다, 이 얼굴이었지.</div>
+<p>실제 버전의 교훈은 "착하게 살면 왕자가 온다"가 아니다. "남들이 다 절박할 때 절박하지 않은 사람이 눈에 띈다"와, "증명할 수 있는 한 짝은 항상 내 손에 들고 있어라"다. 요정 지팡이는 없어도, 구두 한 짝은 챙길 수 있다.</p>
+${moral('왕자는 당신 얼굴을 기억하지 않는다. 증명할 수 있는 다른 한 짝을 당신이 들고 있어야 한다.')}`),
+
+/* 10. 금도끼 은도끼 */
+open('제10화','금도끼 은도끼','axe','산신령이 "이게 네 도끼냐"고 물었을 때, 나무꾼이 통과한 건 정직 테스트가 아니라 신원 확인이었다'),
+pg('제10화 · 금도끼 은도끼',`
+${orig('나무꾼이 연못에 쇠도끼를 빠뜨린다. 산신령이 금도끼를 들고 나와 "이게 네 것이냐"고 묻자 아니라고 답한다. 은도끼도 아니라고 한다. 쇠도끼가 나오자 "제 것입니다"라고 답한다. 산신령은 정직함을 칭찬하며 세 개를 다 준다.')}
+<h3>실제 버전 ① — 그건 정직 테스트가 아니라 KYC였다</h3>
+<p>산신령의 입장에서 다시 보자. 연못에서 도끼 세 개가 나왔다. 하나만 이 사람 것이다. 산신령은 "정직하냐"를 시험한 게 아니라 "누구 것이냐"를 확인한 것이다. 요즘 말로 본인 확인 절차다. 나무꾼이 "금도끼요"라고 했으면 그건 거짓말이 아니라 사기 미수였고, 산신령은 도끼를 못 돌려주는 게 아니라 안 돌려줬을 것이다.</p>
+<p>그러니 나무꾼이 받은 상은 "정직해서 받은 보너스"이기도 하지만, 동시에 "본인 확인을 통과한 사람에게만 열리는 계좌" 같은 것이었다. 정직은 도덕이면서 동시에 제일 싼 리스크 관리다.</p>
+<p>현실에서는 이 순서가 자주 뒤집힌다. 금도끼부터 집으려는 사람이 너무 많아서, 정작 쇠도끼 주인이 "그건 제 거 아닌데요"라고 말하면 다들 이상하게 쳐다본다.</p>`),
+pg('제10화 · 금도끼 은도끼',`
+<h3>실제 버전 ② — 욕심쟁이 나무꾼은 사실 남의 성공을 복제한 사람이다</h3>
+<p>동화의 후반부. 이 이야기를 들은 욕심쟁이 나무꾼이 일부러 도끼를 빠뜨리고 "금도끼가 제 것입니다"라고 말한다. 산신령은 아무것도 안 준다. 쇠도끼마저 안 준다.</p>
+<p>이 사람의 문제는 욕심 그 자체보다, "정직한 나무꾼이 왜 상을 받았는지"를 잘못 분석한 데 있다. 그는 "연못 + 도끼 = 금"으로 이해했다. 하지만 실제 공식은 "연못 + 도끼 + 본인 확인 통과 = 금"이었다. 마지막 항을 빼먹으면 식이 안 성립한다. 놀부와 정확히 같은 실수다. 동화들은 서로 다른 얼굴로 같은 말을 반복한다.</p>
+<ul class="bullet">
+<li>정직한 나무꾼 : 쇠도끼를 원했고, 금도끼는 덤이었다.</li>
+<li>욕심쟁이 나무꾼 : 금도끼를 원했고, 쇠도끼도 잃었다.</li>
+<li>산신령 : 두 사람의 차이를 질문 한 개로 알아냈다. 원래 뭘 원했는지.</li>
+</ul>
+<p>결국 산신령의 질문은 이것이었다. "당신이 원래 가진 건 뭐냐." 이 질문에 담담하게 대답할 수 있는 사람이 금도끼를 받는다. 자기 몫이 쇠도끼라는 걸 아는 사람. 금도끼는 그 사람에게 가는 덤이고, 덤을 노리는 순간 본전도 사라진다.</p>
+${moral('정직은 도덕이기 전에 가장 싼 본인 확인이다. 내 것이 쇠도끼임을 아는 사람에게만 금도끼가 덤으로 온다.')}`),
+
+/* 마무리 */
+pg('나가며',`<h2>동화는 끝났지만,<br>우리는 아직 그 안에 산다</h2>
+<p>열 편을 다시 읽어 보니 동화는 거짓말을 한 적이 없었다. 다만 결말을 우리가 편한 데서 잘랐을 뿐이다. 박이 터진 뒤의 흥부네, 준공 전에 늑대를 만난 셋째 돼지, 얼굴을 기억 못 하는 왕자. 이 이야기들은 잘라 낸 뒷장에서 훨씬 재미있어진다.</p>
+<p>그리고 눈치챘겠지만, 열 편이 사실 몇 개 안 되는 말을 반복하고 있다.</p>
+<ul class="bullet">
+<li>모두가 알아도, 처음 말하는 사람이 없으면 문제는 없는 것이 된다. (당나귀 귀, 벌거벗은 임금님)</li>
+<li>빠른 사람이 아니라 남아 있는 사람이 이긴다. (토끼와 거북이, 개미와 베짱이)</li>
+<li>남의 결과는 복제되지만 과정은 복제되지 않는다. (흥부와 놀부, 금도끼 은도끼)</li>
+<li>내가 만진 건 다리고, 코끼리는 언제나 그보다 크다. (코끼리, 양치기 소년)</li>
+<li>완벽을 기다리지 말고, 증명할 한 짝을 들고 살면서 고쳐라. (아기돼지, 신데렐라)</li>
+</ul>
+<p>내일 회의실에서 당나귀 귀를 보거든, 웃으며 이 책을 떠올리시길. 그리고 가능하면, 그 방의 아이가 되어 주시길.</p>
+<p class="sm" style="margin-top:1.5em;text-align:right">${AUTHOR}</p>`),
+
+{type:'end',html:`<div class="cover" style="background:linear-gradient(180deg,#b5442a 0%,#7d2e1b 100%)"><div class="tag">THE END</div><h1 style="font-size:1.9rem">읽어 주셔서<br>고맙습니다<small>당신의 대나무 숲이 조금은 조용해지길</small></h1><div class="auth">${AUTHOR}</div><div class="hint">화면 왼쪽을 눌러 처음으로 돌아갈 수 있습니다</div></div>`,toc:'마지막 장'}
+];
+
+/* ---------- 목차 생성 ---------- */
+function buildToc(clickable){
+  let s='';
+  PAGES.forEach((p,i)=>{
+    if(p.chapter||p.type==='cover'||p.type==='end'||(p.type==='text'&&(i===1||i===PAGES.length-2))){
+      const label=p.toc||(i===1?'들어가며':'나가며');
+      s+=`<li data-i="${i}" class="${i===cur?'cur':''}"><span>${label}</span><span class="n">${i+1}</span></li>`;
+    }
+  });
+  return s;
+}
+PAGES[PAGES.findIndex(p=>p.type==='toc')].html=`<div class="pg"><div class="body"><div class="kicker">차례</div><h2>목차</h2><ul class="toc" id="pageToc"></ul><p class="sm" style="margin-top:1em">항목을 누르면 바로 이동합니다.</p></div></div>`;
+
+/* ---------- 렌더 엔진 ---------- */
+const page=document.getElementById('page'),flip=document.getElementById('flip'),pos=document.getElementById('pos'),prog=document.querySelector('#prog i');
+let cur=0,busy=false;
+function render(el,i){
+  const p=PAGES[i];
+  let h=p.html;
+  if(p.type==='text'||p.type==='toc'){
+    h=h.replace('</div></div>',`</div><div class="foot"><span>${TITLE} · ${AUTHOR}</span><span class="num">${i+1} / ${PAGES.length}</span></div></div>`);
+  }
+  if(p.type==='open'){
+    h=h.replace('</div>','</div>').replace(/<\/div>$/,`<div class="foot" style="position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 42px;font-family:var(--sans);font-size:11px;color:var(--ink2)"><span>${TITLE}</span><span>${i+1} / ${PAGES.length}</span></div></div>`);
+  }
+  el.innerHTML=h;
+  if(p.type==='toc'){el.querySelector('#pageToc').innerHTML=buildToc(true);el.querySelectorAll('#pageToc li').forEach(li=>li.addEventListener('click',e=>{e.stopPropagation();go(+li.dataset.i)}));}
+}
+function ui(){pos.textContent=`${cur+1} / ${PAGES.length}`;prog.style.width=((cur)/(PAGES.length-1)*100)+'%';document.getElementById('btnPrev').disabled=cur===0;document.getElementById('btnNext').disabled=cur===PAGES.length-1;}
+function go(n){
+  if(busy||n<0||n>=PAGES.length||n===cur)return;
+  busy=true;
+  const forward=n>cur;
+  flip.className='sheet';flip.style.display='';
+  if(forward){
+    render(flip,cur);render(page,n);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>flip.classList.add('next')));
+  }else{
+    render(flip,n);flip.classList.add('prev');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{flip.classList.add('done')}));
+  }
+  const end=()=>{
+    if(!forward)render(page,n);
+    flip.style.display='none';flip.className='sheet';
+    cur=n;ui();busy=false;
+    const b=page.querySelector('.body');if(b)b.scrollTop=0;
+  };
+  setTimeout(end,570);
+}
+render(page,0);ui();
+/* 탭존 */
+document.getElementById('tapR').addEventListener('click',()=>go(cur+1));
+document.getElementById('tapL').addEventListener('click',()=>cur===PAGES.length-1?go(0):go(cur-1));
+document.getElementById('btnNext').addEventListener('click',()=>go(cur+1));
+document.getElementById('btnPrev').addEventListener('click',()=>go(cur-1));
+/* 키보드 */
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);if(e.key==='Escape')tocov.classList.remove('on');});
+/* 스와이프 */
+let sx=0,sy=0,st=0;
+const book=document.getElementById('book');
+book.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now()},{passive:true});
+book.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-st<600){dx<0?go(cur+1):go(cur-1)}},{passive:true});
+/* 목차 오버레이 */
+const tocov=document.getElementById('tocov'),tocList=document.getElementById('tocList');
+document.getElementById('btnToc').addEventListener('click',()=>{tocList.innerHTML=buildToc();tocList.querySelectorAll('li').forEach(li=>li.addEventListener('click',()=>{tocov.classList.remove('on');go(+li.dataset.i)}));tocov.classList.add('on')});
+document.getElementById('tocClose').addEventListener('click',()=>tocov.classList.remove('on'));
+tocov.addEventListener('click',e=>{if(e.target===tocov)tocov.classList.remove('on')});
+</script>
+</body>
+</html>
